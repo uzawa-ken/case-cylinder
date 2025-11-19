@@ -1,0 +1,114 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2412                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     pisoFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         30000.0;
+
+deltaT          0.5;
+
+writeControl    adjustable;
+
+writeInterval   100.0;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  yes;
+
+maxCo           0.5;
+
+libs
+(
+);
+
+functions
+{
+  // 1) 抵抗係数の時系列（毎ステップ評価）
+  forces
+  {
+    type            forceCoeffs;
+    libs            ("libforces.so");
+    patches         ("sphere");       // ★パッチ名を実際のものに
+    rho             rhoInf;
+    rhoInf          1;
+    magUInf         0.01;             // 例
+    lRef            1;                // D
+    Aref            0.785398;         // πD^2/4
+    dragDir         (1 0 0);
+    liftDir         (0 1 0);
+    CofR            (0 0 0);
+    log             true;
+
+    // ★毎ステップで評価（出力は solver の write に同期）
+    executeControl  timeStep;
+    executeInterval 1;
+    writeControl    writeTime;        // ← ファイルは solver の write タイミングで作成
+  }
+
+  // 2) 時間平均（forceCoeffs を参照）
+  coeffsAvg
+  {
+    type            valueAverage;
+    libs            ("libfieldFunctionObjects.so"); // ★これを明示
+    functionObject  forces;              // ← 上の forceCoeffs 名を参照
+    fields          (Cd);                // 平均したい列名（例：Cd）
+    // 任意: timeStart/timeEnd や window で区間指定も可
+    executeControl  timeStep;            // ★毎ステップで平均を更新
+    executeInterval 100;
+    writeControl    writeTime;           // ★ファイル書き出しは solver の write と同期
+    writeToFile     yes;
+    log             true;
+
+    resetOnRestart  true;
+    timeStart       10000;    // 例：t=10000 から平均開始
+  }
+}
+
+/*
+functions
+{
+    #include "forceCoeffs"
+
+    coeffsAvg
+    {
+        type           valueAverage;
+        functionObject forces;           // ← 上の forceCoeffs を参照
+        fields         (Cd);       // ヘッダにある列名を列挙
+        writeToFile    yes;
+        log            true;
+    }
+}
+*/
+
+// ************************************************************************* //

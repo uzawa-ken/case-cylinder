@@ -1,0 +1,131 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2412                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale 1.0;
+
+// 5:2:2
+xmin -10.0;
+xmax  40.0;
+ymin -10.0;
+ymax  10.0;
+zmin -10.0;
+zmax  10.0;
+
+vertices
+(
+    ($xmin $ymin $zmin) // 0
+    ($xmax $ymin $zmin) // 1
+    ($xmin $ymax $zmin) // 2
+    ($xmax $ymax $zmin) // 3
+    ($xmin $ymin $zmax) // 4
+    ($xmax $ymin $zmax) // 5
+    ($xmin $ymax $zmax) // 6
+    ($xmax $ymax $zmax) // 7
+);
+
+blocks
+(
+    // 5:2:2
+    hex (0 1 3 2 4 5 7 6) (100 40 40) simpleGrading
+    (
+        // x
+        (
+            (0.18  0.13125  0.05) 
+            (0.04  0.3      1) // 100*0.25 = 25cell
+            (0.78  0.56875  25)
+        )
+        // y
+        (
+            (0.45  0.1875  0.025)
+            (0.1   0.625   1) // 40*0.625 = 25cell
+            (0.45  0.1875  40)
+        )
+        // z
+        (
+            (0.45  0.1875  1)
+            (0.1   0.625   1) // 40*0.625 = 25cell
+            (0.45  0.1875  1)
+        )
+    )
+);
+
+edges
+(
+);
+
+boundary
+(
+    xm
+    {
+        type patch;
+        faces
+        (
+            (0 4 6 2)
+        );
+    }
+
+    xp
+    {
+        type patch;
+        faces
+        (
+            (1 3 7 5)
+        );
+    }
+
+    ym
+    {
+        type patch;
+        faces
+        (
+            (0 1 5 4)
+        );
+    }
+
+    yp
+    {
+        type patch;
+        faces
+        (
+            (2 3 7 6)
+        );
+    }
+
+    zm
+    {
+        type patch;
+        faces
+        (
+            (0 1 3 2)
+        );
+    }
+
+    zp
+    {
+        type patch;
+        faces
+        (
+            (4 5 7 6)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+
+// ************************************************************************* //
