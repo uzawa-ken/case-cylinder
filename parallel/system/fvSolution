@@ -53,5 +53,7 @@ PIMPLE
     nCorrectors         2;
 }
 
+writePressureSystem   true;
+gnnWriteInterval      20;
 
 // ************************************************************************* //
